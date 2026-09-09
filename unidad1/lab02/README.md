@@ -87,7 +87,9 @@ docker compose down
   - Es la herramienta moderna y estándar en todas las distribuciones Linux actuales (paquete iproute2).
     ```bash
     ip a
-   <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/2d83c137-892f-479a-95f3-9f392f929554" />
+
+  <img width="1109" height="503" alt="image" src="https://github.com/user-attachments/assets/e71ec736-4a9a-43ed-979c-d5ebcb2bcaf4" />
+
 
 
 
@@ -107,7 +109,12 @@ docker compose down
   - **netmask**: Máscara de subred tradicional (ej. 255.255.255.0).
   - **ether**: Dirección MAC.
   - **RX packets / TX packets**: Estadísticas de paquetes recibidos y transmitidos (útil para detectar errores o pérdida de paquetes a nivel de hardware).
- 
+ <img width="832" height="842" alt="image" src="https://github.com/user-attachments/assets/ec31c186-165e-4c1f-96f5-005b8b109c1b" />
+Direccion IPV4:
+Propio: 192.168.40.238
+Compañera: 192.168.40.239
+MAscara de subred: 255.255.255.0
+Dirección Fisica: BC-EC-A0-39-16-89
 ## Diagnóstico de Conectividad Básico
 
 - Una vez verificada la interfaz local, el siguiente paso es comprobar si el equipo puede comunicarse con otros nodos de la red.
@@ -116,12 +123,16 @@ docker compose down
   ```bash
   ping 8.8.8.8
   ```
+  <img width="490" height="245" alt="image" src="https://github.com/user-attachments/assets/38bea686-5ba2-40ff-96b6-0b9de856ad26" />
+ 
   ```bash
   ping -c 4 google.com
   ```
+  <img width="551" height="230" alt="image" src="https://github.com/user-attachments/assets/0b649941-dedb-405d-8979-ca2c0b0be02b" />
+
   - **time=XX ms**: El tiempo de ida y vuelta (Round Trip Time o RTT). Valores bajos indican una conexión rápida.
   - **packet loss**: El porcentaje de paquetes perdidos. Lo ideal es 0%. Si es mayor, hay problemas de saturación, interferencia o fallas en el cableado.
- 
+ Revisa los tiempos en milisegundos (Tiempo = XXms) y confirma que el porcentaje de paquetes perdidos sea 0%.
 ## Trazado de Rutas
 - Cuando el comando ping falla o la conexión es lenta, el trazado de rutas ayuda a identificar exactamente en qué punto o salto (hop) de la red pública o privada se está interrumpiendo o ralentizando el tráfico.
   
@@ -130,6 +141,8 @@ docker compose down
    ```bash
   traceroute google.com
   ```
+   <img width="633" height="169" alt="image" src="https://github.com/user-attachments/assets/863a20f6-1f6c-423a-9d64-bcec2ef8c441" />
+
   - **Cómo funciona**: Incrementa el tiempo de vida (TTL) del paquete de 1 en 1. Cada router en el camino descarta el paquete cuando el TTL llega a cero y devuelve un mensaje de error ICMP, revelando su identidad.
   - **Qué buscar**: Si ves asteriscos (* * *), significa que ese router intermedio tiene bloqueados los paquetes de diagnóstico por motivos de seguridad o que la red se cayó en ese punto exacto.
  
@@ -151,6 +164,21 @@ Elaborar un informe detallado, paso a paso, que explique e incluya capturas de p
 2. Programar un emisor y un receptor en el lenguaje de programación Java, con tipos de conexión simplex, dúplex o bidireccional. Utilizando los ejercicios de las figuras 4.8, 4.9, 4.10, 4.11 y 4.12 del libro de M. L. Liu. (2004). Computación Distribuida Fundamentos y Aplicaciones.
    a) Pruebas de la comunicación simplex local (utilizando los contenedores en la misma máquina anfitriona).
    b) Pruebas de comunicación dúplex en la intranet de la universidad (utilizando los contenedores y la red de área local del laboratorio de cómputo).
+Creación de carpeta en el disco C
+
+<img width="523" height="165" alt="image" src="https://github.com/user-attachments/assets/95bd9433-67fe-4dc0-b31f-5f2f6f63b461" />
+ Creación del archivo en java
+ 
+ <img width="735" height="250" alt="image" src="https://github.com/user-attachments/assets/7ec6d48f-312a-48c4-8114-b6314d9a6c3b" />
+creacion del emisor
+<img width="582" height="91" alt="image" src="https://github.com/user-attachments/assets/1f279b91-2fb1-466e-adfa-2b3b1ca64719" />
+<img width="927" height="730" alt="image" src="https://github.com/user-attachments/assets/39d743ec-168c-476c-a9f4-736cbfe03e9e" />
+Creacion del receptor
+<img width="594" height="101" alt="image" src="https://github.com/user-attachments/assets/19abc0d2-652b-460c-8149-2337ccacf091" />
+<img width="876" height="487" alt="image" src="https://github.com/user-attachments/assets/b5847a4b-e00d-4ec0-8c44-6d8be17df814" />
+Escuchando 
+<img width="559" height="231" alt="image" src="https://github.com/user-attachments/assets/1aad5648-a6f1-45f2-81ab-52a32ff80192" />
+
 
 ## Rúbrica de Calificación
 
