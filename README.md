@@ -60,12 +60,12 @@
                 </td>
             </tr>
             <tr>
-                <td colspan="6" style="font-weight: bold; padding: 10px 8px 4px 8px;">ESTUDIANTES:</td>
+                <td colspan="6" style="font-weight: bold; padding: 10px 8px 4px 8px;">ESTUDIANTE:</td>
             </tr>
             <tr>
                 <td colspan="6" style="padding: 4px 8px 12px 24px;">
                     <ul style="margin: 0; padding-left: 20px;">
-                        <li style="margin-bottom: 5px;">Allison Mayra Usedo Quispe - ausedoq@ulasalle.edu.pe</li>
+                        <li style="margin-bottom: 5px;"
                         <li>Juan Arturo Colque Aragon - jcolque@ulasalle.edu.pe</li>
                     </ul>
                 </td>
