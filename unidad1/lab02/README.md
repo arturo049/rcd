@@ -87,6 +87,10 @@ docker compose down
   - Es la herramienta moderna y estándar en todas las distribuciones Linux actuales (paquete iproute2).
     ```bash
     ip a
+   <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/2d83c137-892f-479a-95f3-9f392f929554" />
+
+
+
     ```
   - **lo**: Interfaz de loopback (local, siempre 127.0.0.1).
   - **eth0, enp3s0, wlan0**: Nombres de las interfaces físicas (Ethernet o Wi-Fi).
