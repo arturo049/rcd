@@ -1,0 +1,56 @@
+#include <iostream>
+#include <string>
+#include <cmath>
+#include <bitset>
+#include <iomanip>
+
+using namespace std;
+
+int main() {
+    string ipBase = "192.168.10.0";
+    int numSubredes = 4;
+    int hostsDeseados = 60;
+
+    cout << "Ingrese la IP base (ej. 192.168.10.0): ";
+    cin >> ipBase;
+    cout << "Ingrese cantidad de subredes deseadas: ";
+    cin >> numSubredes;
+    cout << "Ingrese cantidad de hosts por subred: ";
+    cin >> hostsDeseados;
+
+    // Cálculo de bits
+    int bitsPrestados = ceil(log2(numSubredes));
+    int bitsHost = 8 - bitsPrestados;
+    int hostsUtiles = pow(2, bitsHost) - 2;
+    int cidr = 24 + bitsPrestados;
+    int tamanioSubred = pow(2, bitsHost);
+
+    // Formatear prefijo IP (extraer los 3 primeros octetos)
+    string prefijo = ipBase.substr(0, ipBase.rfind('.') + 1);
+
+    cout << "\nBITS PRESTADOS = " << bitsPrestados << endl;
+    cout << "host = " << hostsUtiles << endl;
+    cout << "\t\t\t\t\t" << prefijo << "0/" << cidr << "\n\n";
+
+    for (int i = 0; i < numSubredes; i++) {
+        int ipRed = i * tamanioSubred;
+        string bin = bitset<8>(ipRed).to_string();
+        string bitsRedBin = bin.substr(0, bitsPrestados);
+        string bitsHostBin = bin.substr(bitsPrestados);
+
+        cout << "SUBRED " << setfill('0') << setw(2) << (i + 1) << "\t"
+             << prefijo << "\t"
+             << bitsRedBin << bitsHostBin << "\t";
+
+        // Mostrar primeros hosts de la subred
+        int ipInicio = ipRed + 1;
+        int ipFin = ipRed + hostsUtiles;
+
+        cout << prefijo << ipInicio << " - "
+             << prefijo << (ipInicio + 1) << " - "
+             << prefijo << (ipInicio + 2) << " - "
+             << prefijo << ipFin << "/" << cidr << " ...\n";
+    }
+
+    return 0;
+}
