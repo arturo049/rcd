@@ -1,55 +1,170 @@
 #include <iostream>
 #include <string>
+#include <vector>
+#include <sstream>
 #include <cmath>
 #include <bitset>
 #include <iomanip>
+#include <cstdint>
 
 using namespace std;
 
+// Convierte un entero de 32 bits a formato IP decimal (0.0.0.0)
+string uint32ToIP(uint32_t ip) {
+    return to_string((ip >> 24) & 0xFF) + "." +
+           to_string((ip >> 16) & 0xFF) + "." +
+           to_string((ip >> 8) & 0xFF) + "." +
+           to_string(ip & 0xFF);
+}
+
+// Convierte un entero de 32 bits a representación binaria de 32 bits
+string uint32ToBinary(uint32_t ip) {
+    string b1 = bitset<8>((ip >> 24) & 0xFF).to_string();
+    string b2 = bitset<8>((ip >> 16) & 0xFF).to_string();
+    string b3 = bitset<8>((ip >> 8) & 0xFF).to_string();
+    string b4 = bitset<8>(ip & 0xFF).to_string();
+    return b1 + "." + b2 + "." + b3 + "." + b4;
+}
+
+// Convierte una cadena IP "A.B.C.D" a entero de 32 bits
+uint32_t ipToUint32(const string& ipStr) {
+    int o1, o2, o3, o4;
+    char dot;
+    stringstream ss(ipStr);
+    ss >> o1 >> dot >> o2 >> dot >> o3 >> dot >> o4;
+    return ((uint32_t)o1 << 24) | ((uint32_t)o2 << 16) | ((uint32_t)o3 << 8) | (uint32_t)o4;
+}
+
+// Obtiene la Clase por defecto y su máscara por defecto
+pair<char, int> getIPClassAndDefaultMask(uint32_t ip) {
+    uint8_t primerOcteto = (ip >> 24) & 0xFF;
+    if (primerOcteto >= 1 && primerOcteto <= 126) return {'A', 8};
+    if (primerOcteto >= 128 && primerOcteto <= 191) return {'B', 16};
+    if (primerOcteto >= 192 && primerOcteto <= 223) return {'C', 24};
+    return {'X', 24};
+}
+
 int main() {
-    string ipBase = "192.168.10.0";
-    int numSubredes = 4;
-    int hostsDeseados = 60;
+    string ipInput;
+    int numSubredes, hostsPorSubred;
 
-    cout << "Ingrese la IP base (ej. 192.168.10.0): ";
-    cin >> ipBase;
-    cout << "Ingrese cantidad de subredes deseadas: ";
+    cout << "==================================================\n";
+    cout << "          CALCULADORA DE SUBREDES         \n";
+    cout << "==================================================\n";
+    cout << "Ingrese la IP base (ej. 192.168.1.0): ";
+    cin >> ipInput;
+    cout << "Ingrese la cantidad de subredes requeridas: ";
     cin >> numSubredes;
-    cout << "Ingrese cantidad de hosts por subred: ";
-    cin >> hostsDeseados;
+    cout << "Ingrese la cantidad de hosts requeridos por subred: ";
+    cin >> hostsPorSubred;
 
-    // Cálculo de bits
-    int bitsPrestados = ceil(log2(numSubredes));
-    int bitsHost = 8 - bitsPrestados;
-    int hostsUtiles = pow(2, bitsHost) - 2;
-    int cidr = 24 + bitsPrestados;
-    int tamanioSubred = pow(2, bitsHost);
+    uint32_t ipBaseNum = ipToUint32(ipInput);
+    auto [claseOriginal, mascaraOriginal] = getIPClassAndDefaultMask(ipBaseNum);
 
-    // Formatear prefijo IP (extraer los 3 primeros octetos)
-    string prefijo = ipBase.substr(0, ipBase.rfind('.') + 1);
+    // 1. Calcular bits de host (h) necesarios
+    int bitsHostReq = 0;
+    while ((pow(2, bitsHostReq) - 2) < hostsPorSubred) {
+        bitsHostReq++;
+    }
 
-    cout << "\nBITS PRESTADOS = " << bitsPrestados << endl;
-    cout << "host = " << hostsUtiles << endl;
-    cout << "\t\t\t\t\t" << prefijo << "0/" << cidr << "\n\n";
+    // 2. Calcular bits de subred (n) necesarios
+    int bitsSubredReq = 0;
+    while (pow(2, bitsSubredReq) < numSubredes) {
+        bitsSubredReq++;
+    }
+
+    // 3. Evaluar si excede la clase ingresada y reajustar automáticamente
+    int totalBitsHostSubred = bitsSubredReq + bitsHostReq;
+    char claseFinal = claseOriginal;
+    int mascaraBaseFinal = mascaraOriginal;
+    uint32_t ipAjustadaNum = ipBaseNum;
+
+    if (totalBitsHostSubred > (32 - mascaraOriginal)) {
+        cout << "\n--------------------------------------------------\n";
+        cout << "[RECALCULANDO AUTOMATICAMENTE]\n";
+        cout << "La Clase " << claseOriginal << " no satisface los " << totalBitsHostSubred 
+             << " bits requeridos (" << bitsSubredReq << " subred + " << bitsHostReq << " host).\n";
+
+        if (totalBitsHostSubred <= 16) {
+            claseFinal = 'B';
+            mascaraBaseFinal = 16;
+            // Migrar IP a un rango estándar Clase B si venía de C
+            ipAjustadaNum = ipToUint32("172.16.0.0");
+            cout << "-> Se cambio automaticamente a CLASE B (Red Base: 172.16.0.0/16)\n";
+        } else if (totalBitsHostSubred <= 24) {
+            claseFinal = 'A';
+            mascaraBaseFinal = 8;
+            // Migrar IP a un rango estándar Clase A
+            ipAjustadaNum = ipToUint32("10.0.0.0");
+            cout << "-> Se cambio automaticamente a CLASE A (Red Base: 10.0.0.0/8)\n";
+        } else {
+            cout << "-> ERROR: La cantidad de hosts/subredes sobrepasa la capacidad de IPv4.\n";
+            return 1;
+        }
+        cout << "--------------------------------------------------\n";
+    }
+
+    // 4. Parámetros finales para el cálculo
+    int nuevaMascara = 32 - bitsHostReq; 
+    uint32_t tamanoBloque = 1ULL << bitsHostReq; // 2^bitsHostReq
+    uint32_t hostsUtiles = tamanoBloque - 2;
+
+    uint32_t mascaraBits = (nuevaMascara == 0) ? 0 : (0xFFFFFFFFULL << (32 - nuevaMascara));
+    uint32_t wildcardBits = ~mascaraBits;
+
+    // Red Base (limpiando bits que no corresponden a la red)
+    uint32_t redBaseLimpia = ipAjustadaNum & mascaraBits;
+
+    // Imprimir encabezado estilo ipcalc
+    cout << "\nAddress:   " << left << setw(18) << uint32ToIP(redBaseLimpia)
+         << uint32ToBinary(redBaseLimpia) << endl;
+
+    uint32_t mascaraBaseBits = (mascaraBaseFinal == 0) ? 0 : (0xFFFFFFFFULL << (32 - mascaraBaseFinal));
+    cout << "Netmask:   " << left << setw(18) << (uint32ToIP(mascaraBaseBits) + " = " + to_string(mascaraBaseFinal))
+         << uint32ToBinary(mascaraBaseBits) << endl;
+
+    cout << "Wildcard:  " << left << setw(18) << uint32ToIP(~mascaraBaseBits)
+         << uint32ToBinary(~mascaraBaseBits) << endl;
+
+    cout << "=>\n";
+
+    // Resumen de la Red Base
+    uint32_t broadcastBase = redBaseLimpia | ~mascaraBaseBits;
+    uint32_t hostsTotalBase = (1ULL << (32 - mascaraBaseFinal)) - 2;
+
+    cout << "Network:   " << left << setw(18) << (uint32ToIP(redBaseLimpia) + "/" + to_string(mascaraBaseFinal))
+         << uint32ToBinary(redBaseLimpia) << endl;
+    cout << "HostMin:   " << left << setw(18) << uint32ToIP(redBaseLimpia + 1)
+         << uint32ToBinary(redBaseLimpia + 1) << endl;
+    cout << "HostMax:   " << left << setw(18) << uint32ToIP(broadcastBase - 1)
+         << uint32ToBinary(broadcastBase - 1) << endl;
+    cout << "Broadcast: " << left << setw(18) << uint32ToIP(broadcastBase)
+         << uint32ToBinary(broadcastBase) << endl;
+    cout << "Hosts/Net: " << left << setw(18) << hostsTotalBase << "Class " << claseFinal << ", Private Internet\n\n";
+
+    // Imprimir el desglose de subredes transicionadas
+    cout << "Subnets after transition from /" << mascaraBaseFinal << " to /" << nuevaMascara << "\n\n";
 
     for (int i = 0; i < numSubredes; i++) {
-        int ipRed = i * tamanioSubred;
-        string bin = bitset<8>(ipRed).to_string();
-        string bitsRedBin = bin.substr(0, bitsPrestados);
-        string bitsHostBin = bin.substr(bitsPrestados);
+        uint32_t subredIP = redBaseLimpia + (i * tamanoBloque);
+        uint32_t hostMin = subredIP + 1;
+        uint32_t broadcast = subredIP + tamanoBloque - 1;
+        uint32_t hostMax = broadcast - 1;
 
-        cout << "SUBRED " << setfill('0') << setw(2) << (i + 1) << "\t"
-             << prefijo << "\t"
-             << bitsRedBin << bitsHostBin << "\t";
+        cout << (i + 1) << ".\n";
+        cout << "Network:   " << left << setw(18) << (uint32ToIP(subredIP) + "/" + to_string(nuevaMascara))
+             << uint32ToBinary(subredIP) << endl;
 
-        // Mostrar primeros hosts de la subred
-        int ipInicio = ipRed + 1;
-        int ipFin = ipRed + hostsUtiles;
+        cout << "HostMin:   " << left << setw(18) << uint32ToIP(hostMin)
+             << uint32ToBinary(hostMin) << endl;
 
-        cout << prefijo << ipInicio << " - "
-             << prefijo << (ipInicio + 1) << " - "
-             << prefijo << (ipInicio + 2) << " - "
-             << prefijo << ipFin << "/" << cidr << " ...\n";
+        cout << "HostMax:   " << left << setw(18) << uint32ToIP(hostMax)
+             << uint32ToBinary(hostMax) << endl;
+
+        cout << "Broadcast: " << left << setw(18) << uint32ToIP(broadcast)
+             << uint32ToBinary(broadcast) << endl;
+
+        cout << "Hosts/Net: " << left << setw(18) << hostsUtiles << "Class " << claseFinal << ", Private Internet\n\n";
     }
 
     return 0;
