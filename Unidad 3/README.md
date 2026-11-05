@@ -69,6 +69,16 @@
                     </ul>
                 </td>
             </tr>
+         <tr>
+                <td colspan="6" style="font-weight: bold; padding: 10px 8px 4px 8px;">NOTA:</td>
+            </tr>
+            <tr>
+                <td colspan="6" style="padding: 4px 8px 12px 24px;">
+                    <ul style="margin: 0; padding-left: 20px;">
+                        <li style="margin-bottom: 5px;">Se ejecuta en C ++</li>
+                    </ul>
+                </td>
+            </tr>
         </tbody>
     </table>
 </div>
