@@ -18,7 +18,7 @@
             </tr>
             <tr>
                 <td style="font-weight: bold; text-align: left; padding: 10px; width: 150px;">Fecha:</td>
-                <td style="text-align: left; padding: 10px;">09/09/2026</td>
+                <td style="text-align: left; padding: 10px;">05/11/2026</td>
             </tr>
         </tbody>
     </table>
@@ -43,7 +43,7 @@
             </tr>
             <tr>
                 <td style="font-weight: bold; padding: 8px;">NÚMERO DE PRÁCTICA:</td>
-                <td style="padding: 8px;">01</td>
+                <td style="padding: 8px;">07</td>
                 <td style="font-weight: bold; padding: 8px;">AÑO LECTIVO:</td>
                 <td style="padding: 8px;">2026B</td>
                 <td style="font-weight: bold; padding: 8px;">NRO. SEMESTRE:</td>
@@ -60,7 +60,7 @@
                 </td>
             </tr>
             <tr>
-                <td colspan="6" style="font-weight: bold; padding: 10px 8px 4px 8px;">ESTUDIANTES:</td>
+                <td colspan="6" style="font-weight: bold; padding: 10px 8px 4px 8px;">ESTUDIANTE:</td>
             </tr>
             <tr>
                 <td colspan="6" style="padding: 4px 8px 12px 24px;">
