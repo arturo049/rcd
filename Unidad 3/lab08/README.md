@@ -43,7 +43,7 @@
             </tr>
             <tr>
                 <td style="font-weight: bold; padding: 8px;">NÚMERO DE PRÁCTICA:</td>
-                <td style="padding: 8px;">07</td>
+                <td style="padding: 8px;">08</td>
                 <td style="font-weight: bold; padding: 8px;">AÑO LECTIVO:</td>
                 <td style="padding: 8px;">2026B</td>
                 <td style="font-weight: bold; padding: 8px;">NRO. SEMESTRE:</td>
