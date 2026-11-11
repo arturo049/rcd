@@ -161,7 +161,7 @@ interface GigabitEthernet0/0/1
 
 end
 write memory
-
+```
 ### Diagrama de la Topología
 
 <img width="471" height="455" alt="image" src="https://github.com/user-attachments/assets/77231c28-4e2a-4e47-94ef-69b3e2e9002b" />
