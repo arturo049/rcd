@@ -18,7 +18,7 @@
             </tr>
             <tr>
                 <td style="font-weight: bold; text-align: left; padding: 10px; width: 150px;">Fecha:</td>
-                <td style="text-align: left; padding: 10px;">05/11/2026</td>
+                <td style="text-align: left; padding: 10px;">11/11/2026</td>
             </tr>
         </tbody>
     </table>
