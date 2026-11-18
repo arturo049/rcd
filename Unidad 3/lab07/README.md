@@ -93,14 +93,13 @@ Si clona el repositorio en una computadora:
 git clone [https://github.com/arturo049/rcd.git](https://github.com/arturo049/rcd.git)
 cd "rcd/Unidad 3/lab07"
 
-##  Guía de Uso de la Calculadora VLSM
+## Guía de Uso
 
-1. **Ingresar la Red Base:** Escribe la dirección IP principal junto con su prefijo de máscara en formato CIDR (ejemplo: `192.168.1.0/24` o `172.16.0.0/16`). Si omites el prefijo, el sistema asignará automáticamente la máscara por defecto según la clase (A, B o C).
-2. **Definir los Hosts por Subred:** En el segundo campo, indica la cantidad de hosts requeridos separados por comas:
-   * **Modo estándar (VLSM):** Escribe cada requerimiento individualmente (ej. `100, 50, 25, 2`). El algoritmo ordenará los valores de mayor a menor de forma automática.
-   * **Modo masivo (Multiplicador):** Usa el formato `Cantidad x Hosts` para generar múltiples subredes iguales de una sola vez (ej. `50x30, 20x10`).
-3. **Calcular:** Haz clic en el botón **Calcular Subredes VLSM**.
-4. **Interpretar Resultados (Salida estilo `ipcalc`):**
-   * **Resumen Superior:** Muestra la clase de la IP ingresada, el total de direcciones consumidas frente a las disponibles y recomienda cambiar a Clase A, B o C si los hosts superan la capacidad de la red actual.
-   * **Detalle por Subred:** Entrega la máscara de subred (`Netmask`), dirección de red (`Network`), rango de IPs asignables (`HostMin` - `HostMax`) y dirección de difusión (`Broadcast`).
-   * **Bits Prestados:** Indica explícitamente cuántos bits fueron tomados de la porción de host y los resalta en color rojo dentro de la representación binaria.
+1. <b>Dirección IP Base:</b> Ingresar la dirección de red principal junto con su prefijo de máscara en formato CIDR (ejemplo: <code>192.168.1.0/24</code> o <code>172.16.0.0/16</code>). Si se omite el prefijo, el sistema asigna la máscara por defecto según la clase de red.
+2. <b>Requerimientos de Hosts:</b> Especificar la cantidad de dispositivos por subred separados por comas:
+   - <b>Asignación individual:</b> Ingresar cada requerimiento por separado (ejemplo: <code>100, 50, 25, 2</code>). El algoritmo ordena los valores de mayor a menor de forma automática.
+   - <b>Asignación masiva:</b> Utilizar el formato <code>Cantidad x Hosts</code> para generar múltiples subredes del mismo tamaño (ejemplo: <code>50x30, 20x10</code>).
+3. <b>Procesamiento:</b> Presionar el botón <b>Calcular Subredes VLSM</b> para generar la tabla de direccionamiento.
+4. <b>Interpretación de Resultados:</b>
+   - <b>Resumen general:</b> Indica la clase de red detectada, el consumo total de direcciones IP y sugiere una clase superior (A, B o C) en caso de exceder la capacidad del bloque inicial.
+   - <b>Detalle por subred:</b> Presenta la máscara de subred (<code>Netmask</code>), dirección de red (<code>Network</code>), rango de direcciones asignables (<code>HostMin</code> - <code>HostMax</code>), dirección de difusión (<code>Broadcast</code>) y el desglose binario con los bits prestados resaltados.
