@@ -92,3 +92,15 @@ Si clona el repositorio en una computadora:
 ```bash
 git clone [https://github.com/arturo049/rcd.git](https://github.com/arturo049/rcd.git)
 cd "rcd/Unidad 3/lab07"
+
+##  Guía de Uso de la Calculadora VLSM
+
+1. **Ingresar la Red Base:** Escribe la dirección IP principal junto con su prefijo de máscara en formato CIDR (ejemplo: `192.168.1.0/24` o `172.16.0.0/16`). Si omites el prefijo, el sistema asignará automáticamente la máscara por defecto según la clase (A, B o C).
+2. **Definir los Hosts por Subred:** En el segundo campo, indica la cantidad de hosts requeridos separados por comas:
+   * **Modo estándar (VLSM):** Escribe cada requerimiento individualmente (ej. `100, 50, 25, 2`). El algoritmo ordenará los valores de mayor a menor de forma automática.
+   * **Modo masivo (Multiplicador):** Usa el formato `Cantidad x Hosts` para generar múltiples subredes iguales de una sola vez (ej. `50x30, 20x10`).
+3. **Calcular:** Haz clic en el botón **Calcular Subredes VLSM**.
+4. **Interpretar Resultados (Salida estilo `ipcalc`):**
+   * **Resumen Superior:** Muestra la clase de la IP ingresada, el total de direcciones consumidas frente a las disponibles y recomienda cambiar a Clase A, B o C si los hosts superan la capacidad de la red actual.
+   * **Detalle por Subred:** Entrega la máscara de subred (`Netmask`), dirección de red (`Network`), rango de IPs asignables (`HostMin` - `HostMax`) y dirección de difusión (`Broadcast`).
+   * **Bits Prestados:** Indica explícitamente cuántos bits fueron tomados de la porción de host y los resalta en color rojo dentro de la representación binaria.
