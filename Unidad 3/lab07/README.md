@@ -70,7 +70,7 @@
                 </td>
             </tr>
          <tr>
-                <td colspan="6" style="font-weight: bold; padding: 10px 8px 4px 8px;">Desarrollo teórico:</td>
+                <td colspan="6" style="font-weight: bold; padding: 10px 8px 4px 8px;">Desarrollo:</td>
             </tr>
             <tr>
                 <td colspan="6" style="padding: 4px 8px 12px 24px;">
