@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Redes VLSM (tipo ipcalc)</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: #1e1e1e; color: #d4d4d4; margin: 0; }
+    .card { background: #252526; padding: 25px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); max-width: 900px; margin: auto; }
+    h2 { color: #569cd6; margin-top: 0; text-align: center; }
+    .input-group { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
+    .input-field { flex: 1; min-width: 240px; }
+    label { display: block; margin-top: 5px; font-weight: bold; font-size: 0.9em; color: #9cdcfe; }
+    input { width: 100%; padding: 9px; margin-top: 5px; box-sizing: border-box; background: #3c3c3c; color: #fff; border: 1px solid #555; border-radius: 4px; font-family: monospace; font-size: 14px; }
+    small { color: #888; display: block; margin-top: 4px; font-size: 0.8em; }
+    button { margin-top: 15px; width: 100%; padding: 12px; background-color: #0e639c; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    button:hover { background-color: #1177bb; }
+    
+    /* Estilo Terminal tipo ipcalc */
+    .terminal { font-family: 'Courier New', Courier, monospace; background: #000; color: #00ff00; padding: 15px; border-radius: 6px; margin-top: 20px; font-size: 13px; line-height: 1.45; overflow-x: auto; white-space: pre; border: 1px solid #333; }
+    .t-blue { color: #5b9bd5; }
+    .t-cyan { color: #4ec9b0; }
+    .t-yellow { color: #dcdcaa; }
+    .t-purple { color: #c586c0; }
+    .t-pink { color: #ce9178; }
+    .t-red { color: #f44747; }
+    .t-green { color: #6a9955; font-weight: bold; }
+    .t-borrowed { color: #ff4d4d; font-weight: bold; background-color: #3a0000; }
+    .alert { color: #f44747; background-color: #3a0d0d; border: 1px solid #700; padding: 12px; border-radius: 4px; margin-top: 15px; }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h2>Calculadora de Redes VLSM (tipo ipcalc)</h2>
+  
+  <div class="input-group">
+    <div class="input-field">
+      <label for="ip">Dirección IP Base / Máscara inicial:</label>
+      <input type="text" id="ip" value="192.168.1.0/24">
+      <small>Ejemplo: 192.168.1.0/24 o 172.16.0.0/16</small>
+    </div>
+    <div class="input-field">
+      <label for="hostsList">Hosts por cada subred (separados por comas):</label>
+      <input type="text" id="hostsList" value="100, 50, 25, 10, 2">
+      <small>El algoritmo VLSM los ordenará de mayor a menor automáticamente.</small>
+    </div>
+  </div>
+
+  <button onclick="calcularVLSM()">Calcular Subredes VLSM</button>
+
+  <div id="salida"></div>
+</div>
+
+<script>
+function ipAInt(ipStr) {
+  return ipStr.split('.').reduce((acc, oct) => (acc << 8) + parseInt(oct, 10), 0) >>> 0;
+}
+
+function intAIp(intVal) {
+  return [(intVal >>> 24) & 255, (intVal >>> 16) & 255, (intVal >>> 8) & 255, intVal & 255].join('.');
+}
+
+function intABinarioHTML(intVal, cidrOriginal, cidrNuevo = 0) {
+  let str = (intVal >>> 0).toString(2).padStart(32, '0');
+  let octetos = [
+    str.substring(0, 8),
+    str.substring(8, 16),
+    str.substring(16, 24),
+    str.substring(24, 32)
+  ];
+
+  if (cidrNuevo === 0 || cidrNuevo <= cidrOriginal) {
+    return octetos.join('.');
+  }
+
+  let resultadoHtml = '';
+  for (let i = 0; i < 32; i++) {
+    if (i > 0 && i % 8 === 0) resultadoHtml += '.';
+    let char = str[i];
+    if (i >= cidrOriginal && i < cidrNuevo) {
+      resultadoHtml += `<span class="t-borrowed">${char}</span>`;
+    } else {
+      resultadoHtml += char;
+    }
+  }
+  return resultadoHtml;
+}
+
+function obtenerInfoClase(primerOcteto) {
+  if (primerOcteto >= 1 && primerOcteto <= 126) return { clase: 'A', desc: 'Class A, Private/Public Internet' };
+  if (primerOcteto >= 128 && primerOcteto <= 191) return { clase: 'B', desc: 'Class B, Private/Public Internet' };
+  if (primerOcteto >= 192 && primerOcteto <= 223) return { clase: 'C', desc: 'Class C, Private Internet' };
+  return { clase: 'Reservada', desc: 'Class D/E Reserved' };
+}
+
+function recomendarClaseTotal(totalDireccionesNecesarias) {
+  if (totalDireccionesNecesarias <= 256) {
+    return 'Clase C (Soporta hasta 256 direcciones / 254 hosts útiles)';
+  } else if (totalDireccionesNecesarias <= 65536) {
+    return 'Clase B (Soporta hasta 65,536 direcciones / 65,534 hosts útiles)';
+  } else {
+    return 'Clase A (Para redes masivas de más de 65,536 direcciones)';
+  }
+}
+
+function calcularVLSM() {
+  const ipEntrada = document.getElementById('ip').value.trim();
+  const hostsRaw = document.getElementById('hostsList').value.trim();
+  const salida = document.getElementById('salida');
+
+  salida.innerHTML = '';
+
+  let partesIp = ipEntrada.split('/');
+  let ipStr = partesIp[0];
+  let octetos = ipStr.split('.');
+
+  if (octetos.length !== 4 || octetos.some(o => isNaN(o) || o < 0 || o > 255)) {
+    salida.innerHTML = '<div class="alert">Formato de IP inválido. Debe ser X.X.X.X/CIDR (Ej. 192.168.1.0/24).</div>';
+    return;
+  }
+
+  const primerOcteto = parseInt(octetos[0]);
+  const infoClase = obtenerInfoClase(primerOcteto);
+
+  let cidrBase = partesIp[1] ? parseInt(partesIp[1]) : (infoClase.clase === 'A' ? 8 : infoClase.clase === 'B' ? 16 : 24);
+  if (isNaN(cidrBase) || cidrBase < 1 || cidrBase > 30) {
+    salida.innerHTML = '<div class="alert">Prefijo CIDR inválido. Usa un valor entre /1 y /30.</div>';
+    return;
+  }
+
+  let requerimientos = hostsRaw.split(',')
+    .map(h => parseInt(h.trim()))
+    .filter(h => !isNaN(h) && h > 0);
+
+  if (requerimientos.length === 0) {
+    salida.innerHTML = '<div class="alert">Ingresa al menos una cantidad válida de hosts (Ej: 100, 50, 20).</div>';
+    return;
+  }
+
+  // Ordenar de MAYOR a MENOR (Regla principal de VLSM)
+  requerimientos.sort((a, b) => b - a);
+
+  const ipInt = ipAInt(ipStr);
+  const mascaraBaseInt = (0xFFFFFFFF << (32 - cidrBase)) >>> 0;
+  const redBaseInt = (ipInt & mascaraBaseInt) >>> 0;
+  const broadcastBaseInt = (redBaseInt | ~mascaraBaseInt) >>> 0;
+  const capacidadTotalBloque = Math.pow(2, 32 - cidrBase);
+
+  let totalDireccionesAsignadas = 0;
+  let subredesCalculadas = [];
+  let punteroRedInt = redBaseInt;
+
+  for (let i = 0; i < requerimientos.length; i++) {
+    let hostsReq = requerimientos[i];
+    let bitsHost = Math.ceil(Math.log2(hostsReq + 2));
+    let nuevoCidr = 32 - bitsHost;
+    let tamanoBloque = Math.pow(2, bitsHost);
+    let bitsPrestados = nuevoCidr - cidrBase;
+
+    totalDireccionesAsignadas += tamanoBloque;
+
+    let mascaraSubredInt = (0xFFFFFFFF << bitsHost) >>> 0;
+    let wildcardSubredInt = (~mascaraSubredInt) >>> 0;
+
+    subredesCalculadas.push({
+      numero: i + 1,
+      hostsSolicitados: hostsReq,
+      hostsDisponibles: tamanoBloque - 2,
+      cidr: nuevoCidr,
+      bitsPrestados: bitsPrestados,
+      mascaraStr: intAIp(mascaraSubredInt),
+      wildcardStr: intAIp(wildcardSubredInt),
+      networkInt: punteroRedInt,
+      hostMinInt: punteroRedInt + 1,
+      hostMaxInt: (punteroRedInt + tamanoBloque) - 2,
+      broadcastInt: (punteroRedInt + tamanoBloque) - 1
+    });
+
+    punteroRedInt = (punteroRedInt + tamanoBloque) >>> 0;
+  }
+
+  if (totalDireccionesAsignadas > capacidadTotalBloque) {
+    salida.innerHTML = `<div class="alert">
+      <strong>Error de capacidad VLSM:</strong> Tus subredes requieren <strong>${totalDireccionesAsignadas}</strong> direcciones IP en total, pero la red base <code>${intAIp(redBaseInt)}/${cidrBase}</code> solo dispone de <strong>${capacidadTotalBloque}</strong> direcciones.<br><br>
+      <strong>Recomendación del sistema:</strong> Cambia a una red de <strong>${recomendarClaseTotal(totalDireccionesAsignadas)}</strong> o reduce el prefijo CIDR inicial (por ejemplo, usa /${32 - Math.ceil(Math.log2(totalDireccionesAsignadas))}).
+    </div>`;
+    return;
+  }
+
+  let out = '<div class="terminal">';
+  
+  out += `<span class="t-blue">Address:</span>   ${ipStr.padEnd(15)}          <span class="t-yellow">${intABinarioHTML(ipInt, cidrBase)}</span>\n`;
+  out += `<span class="t-blue">Netmask:</span>   ${intAIp(mascaraBaseInt).padEnd(15)} = ${cidrBase}    <span class="t-yellow">${intABinarioHTML(mascaraBaseInt, cidrBase)}</span>\n`;
+  out += `<span class="t-blue">Wildcard:</span>  ${intAIp(~mascaraBaseInt).padEnd(15)}          <span class="t-yellow">${intABinarioHTML(~mascaraBaseInt, cidrBase)}</span>\n`;
+  out += `=>\n`;
+  out += `<span class="t-blue">Network:</span>   ${intAIp(redBaseInt)}/${cidrBase}            <span class="t-yellow">${intABinarioHTML(redBaseInt, cidrBase)}</span>\n`;
+  out += `<span class="t-blue">Broadcast:</span> ${intAIp(broadcastBaseInt).padEnd(15)}          <span class="t-yellow">${intABinarioHTML(broadcastBaseInt, cidrBase)}</span>\n`;
+  out += `<span class="t-blue">Clase IP:</span>  Clase ${infoClase.clase}                   <span class="t-purple">${infoClase.desc}</span>\n\n`;
+
+  out += `<span class="t-cyan">=== RESUMEN DE ASIGNACIÓN VLSM (Ordenado de Mayor a Menor) ===</span>\n`;
+  out += `<strong>Recomendación de Red:</strong> ${recomendarClaseTotal(totalDireccionesAsignadas)}\n`;
+  out += `<strong>Direcciones usadas:</strong>   ${totalDireccionesAsignadas} de ${capacidadTotalBloque} disponibles (${capacidadTotalBloque - totalDireccionesAsignadas} libres)\n`;
+  out += `-----------------------------------------------------------------------------------------\n\n`;
+
+  subredesCalculadas.forEach(sub => {
+    let estadoBits = sub.bitsPrestados > 0 
+      ? `<span class="t-red">SÍ (+${sub.bitsPrestados} bits prestados de /${cidrBase} a /${sub.cidr})</span>` 
+      : `<span class="t-cyan">NO (Usa la máscara base /${sub.cidr})</span>`;
+
+    out += `<span class="t-yellow">Subred #${sub.numero}</span> <span class="t-green">[Solicitados: ${sub.hostsSolicitados} hosts | Útiles: ${sub.hostsDisponibles} hosts]</span>\n`;
+    out += `<strong>¿Se prestaron bits?:</strong> ${estadoBits}\n`;
+    out += `<span class="t-blue">Netmask:</span>   ${sub.mascaraStr} = ${sub.cidr}`.padEnd(32) + `<span class="t-yellow">${intABinarioHTML(ipAInt(sub.mascaraStr), cidrBase, sub.cidr)}</span>\n`;
+    out += `<span class="t-blue">Network:</span>   ${intAIp(sub.networkInt)}/${sub.cidr}`.padEnd(32) + `<span class="t-yellow">${intABinarioHTML(sub.networkInt, cidrBase, sub.cidr)}</span>\n`;
+    out += `<span class="t-blue">HostMin:</span>   ${intAIp(sub.hostMinInt)}`.padEnd(32) + `<span class="t-yellow">${intABinarioHTML(sub.hostMinInt, cidrBase, sub.cidr)}</span>\n`;
+    out += `<span class="t-blue">HostMax:</span>   ${intAIp(sub.hostMaxInt)}`.padEnd(32) + `<span class="t-yellow">${intABinarioHTML(sub.hostMaxInt, cidrBase, sub.cidr)}</span>\n`;
+    out += `<span class="t-blue">Broadcast:</span> ${intAIp(sub.broadcastInt)}`.padEnd(32) + `<span class="t-yellow">${intABinarioHTML(sub.broadcastInt, cidrBase, sub.cidr)}</span>\n\n`;
+  });
+
+  out += '</div>';
+  salida.innerHTML = out;
+}
+</script>
+
+</body>
+</html>
