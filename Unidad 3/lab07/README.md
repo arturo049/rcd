@@ -92,7 +92,7 @@ Si clona el repositorio en una computadora:
 ```bash
 git clone [https://github.com/arturo049/rcd.git](https://github.com/arturo049/rcd.git)
 cd "rcd/Unidad 3/lab07"
-
+```
 ## Guía de Uso
 
 1. <b>Dirección IP Base:</b> Ingresar la dirección de red principal junto con su prefijo de máscara en formato CIDR (ejemplo: <code>192.168.1.0/24</code> o <code>172.16.0.0/16</code>). Si se omite el prefijo, el sistema asigna la máscara por defecto según la clase de red.
