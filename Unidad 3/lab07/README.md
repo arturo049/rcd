@@ -75,3 +75,20 @@
             <tr>
                 <td colspan="6" style="padding: 4px 8px 12px 24px;">
                     <ul style="margin: 0; padding-left: 20px;">
+
+
+---
+
+## Acceso y Ejecución de la Calculadora VLSM
+
+### 1. Ejecutar en línea
+Abrir directamente desde el navegador haciendo clic en el siguiente enlace:
+
+**[Abrir Calculadora de Redes VLSM](https://arturo049.github.io/rcd/Unidad%203/lab07/)**
+
+
+### 2. Ejecutar de forma local tras clonar el repositorio
+Si clona el repositorio en una computadora:
+```bash
+git clone [https://github.com/arturo049/rcd.git](https://github.com/arturo049/rcd.git)
+cd "rcd/Unidad 3/lab07"
